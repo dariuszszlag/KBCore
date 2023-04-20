@@ -125,7 +125,22 @@ tasks.withType<PublishToMavenRepository> {
 
 fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
     versionManager.apply {
-        set(co.touchlab.faktory.versionmanager.GitTagVersionManager)
+        set(object: co.touchlab.faktory.versionmanager.GitTagBasedVersionManager() {
+
+            val TEMP_PUBLISH_TAG_PREFIX = "kmmbridge-tmp-publishing-"
+
+            override fun createMarkerVersion(project: Project, versionString: String): String? {
+                val correctVersion = project.setProperVersion(versionString)
+                return "${TEMP_PUBLISH_TAG_PREFIX}$correctVersion"
+            }
+
+            override fun filterMarkerVersion(project: Project, versionString: String): (String) -> Boolean =
+                {
+                    it.startsWith(
+                        TEMP_PUBLISH_TAG_PREFIX
+                    )
+                }
+        })
         finalizeValue()
     }
     versionWriter.apply {
@@ -153,8 +168,9 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
                 }
 
                 override fun writeMarkerVersion(project: Project, version: String) {
-                    project.procRunFailThrow("git", "tag", version)
-                    project.procRunFailThrow("git", "push", "origin", version)
+                    val correctVersion = project.setProperVersion(version)
+                    project.procRunFailThrow("git", "tag", correctVersion)
+                    project.procRunFailThrow("git", "push", "origin", correctVersion)
                 }
 
                 override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
@@ -169,7 +185,8 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
                 }
 
                 override fun writeFinalVersion(project: Project, version: String) {
-                    project.procRunFailLog("git", "tag", "-a", version, "-m", "KMM release version $version")
+                    val correctVersion = project.setProperVersion(version)
+                    project.procRunFailLog("git", "tag", "-a", correctVersion, "-m", "KMM release version $correctVersion")
                     project.procRunFailLog("git", "push", "--follow-tags")
                 }
 
@@ -181,6 +198,7 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
         finalizeValue()
     }
 }
+
 fun procRun(vararg params: String, processLines: (String, Int) -> Unit): Unit {
     val process = ProcessBuilder(*params)
         .redirectErrorStream(true)
@@ -268,6 +286,11 @@ fun Project.procRunFailThrow(vararg params: String):List<String>{
         throw ProcOutputException("Project.procRunFailLog [failed]: ${params.joinToString(" ")}", output)
     }
     return output
+}
+
+fun Project.setProperVersion(version: String): String {
+    val versionNumberRegex = Regex("([0-9]+(\\.[0-9]+)+)")
+    return version.replace(versionNumberRegex, this.version.toString())
 }
 
 class ProcOutputException(message: String?, val output: List<String>) : Exception(message)
