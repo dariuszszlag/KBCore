@@ -9,9 +9,9 @@ group = "com.darek"
 
 val GIT_USER: String? by project
 val GIT_TOKEN: String? by project
-val VERSION_NAME: String? by project
+val VERSION: String? by project
 
-version = VERSION_NAME ?: "0.1"
+version = VERSION ?: "0.1"
 
 kotlin {
     android {
@@ -23,7 +23,7 @@ kotlin {
             }
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -31,6 +31,7 @@ kotlin {
     ).forEach {
         it.binaries.framework {
             baseName = "kbcore"
+            isStatic = false
         }
     }
 
@@ -118,7 +119,7 @@ tasks.withType<PublishToMavenRepository> {
 }
 
 kmmbridge {
+    mavenPublishArtifacts()
     gitTagVersions()
     spm()
-    mavenPublishArtifacts()
 }
