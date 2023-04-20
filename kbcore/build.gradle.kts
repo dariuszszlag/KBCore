@@ -114,8 +114,8 @@ publishing {
 }
 
 kmmbridge {
+    generateVersion()
     mavenPublishArtifacts()
-    githubReleaseVersions()
     spm()
 }
 
@@ -123,3 +123,151 @@ tasks.withType<PublishToMavenRepository> {
     dependsOn(tasks.assemble)
 }
 
+fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
+    versionManager.apply {
+        set(co.touchlab.faktory.versionmanager.GitTagVersionManager)
+        finalizeValue()
+    }
+    versionWriter.apply {
+        set(CustomGitRemoteVersionWriter())
+        finalizeValue()
+    }
+}
+class CustomGitRemoteVersionWriter: co.touchlab.faktory.versionmanager.VersionWriter {
+    override fun initVersions(project: Project) {
+        // Need to make sure we have all the tags. If no tags, we don't continue (but don't fail)
+        // This will usually happen when doing local dev.
+        try {
+            project.procRunFailThrow("git", "fetch", "--all", "--tags")
+        } catch (e: co.touchlab.faktory.internal.ProcOutputException) {
+            val localOk = e.output.any { it.contains("There is no tracking information for the current branch") }
+            throw co.touchlab.faktory.versionmanager.VersionException(
+                localOk, if (localOk) {
+                    "Version cannot be loaded. Publishing disabled (this is fine for local development)"
+                } else {
+                    "${e.message}\n${e.output.joinToString("\n")}"
+                }
+            )
+        }
+    }
+
+    override fun scanVersions(project: Project, block: (Sequence<String>) -> Unit) {
+        procRunSequence("git", "tag", block = block)
+    }
+
+    override fun writeMarkerVersion(project: Project, version: String) {
+        project.procRunFailThrow("git", "tag", version)
+        project.procRunFailThrow("git", "push", "origin", "tag", version)
+    }
+
+    override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
+        procRunSequence("git", "tag") { sequence ->
+            val partialVersionSequence = sequence.filter(filter)
+            partialVersionSequence.forEach { tag ->
+                project.logger.warn("Deleting tag $tag")
+                project.procRunFailThrow("git", "tag", "-d", tag)
+                project.procRunFailThrow("git", "push", "origin", "-d", tag)
+            }
+        }
+    }
+
+    override fun writeFinalVersion(project: Project, version: String) {
+        project.procRunFailLog("git", "tag", "-a", version, "-m", "KMM release version $version")
+        project.procRunFailLog("git", "push", "--follow-tags")
+    }
+
+    override fun runGitStatement(project: Project, vararg params: String) {
+        project.procRunFailLog("git", *params)
+    }
+}
+
+fun procRun(vararg params: String, processLines: (String, Int) -> Unit): Unit {
+    val process = ProcessBuilder(*params)
+        .redirectErrorStream(true)
+        .start()
+
+    val streamReader = jdk.internal.org.jline.utils.InputStreamReader(process.inputStream)
+    val bufferedReader = streamReader.buffered()
+    var lineCount = 1
+
+    bufferedReader.forEachLine { line ->
+        processLines(line, lineCount)
+        lineCount++
+    }
+
+    bufferedReader.close()
+    val returnValue = process.waitFor()
+    if(returnValue != 0)
+        throw GradleException("Process failed: ${params.joinToString(" ")}")
+}
+fun procRunSequence(vararg params: String, block:(Sequence<String>)->Unit) {
+    val process = ProcessBuilder(*params)
+        .redirectErrorStream(true)
+        .start()
+
+    val streamReader = jdk.internal.org.jline.utils.InputStreamReader(process.inputStream)
+    val bufferedReader = streamReader.buffered()
+
+    var thrown:Throwable? = null
+
+    try {
+        block(bufferedReader.lineSequence())
+    } catch (e: Throwable) {
+        thrown = e
+    }
+
+    bufferedReader.close()
+    val returnValue = process.waitFor()
+    if(returnValue != 0)
+        throw GradleException("Process failed: ${params.joinToString(" ")}", thrown)
+
+    if(thrown != null){
+        throw thrown
+    }
+}
+
+/**
+ * Run a process. If it fails, write output to gradle error log and throw exception.
+ */
+fun Project.procRunFailLog(vararg params: String):List<String>{
+    val output = mutableListOf<String>()
+    try {
+        logger.info("Project.procRunFailLog: ${params.joinToString(" ")}")
+        procRun(*params){ line, _ -> output.add(line)}
+    } catch (e: Exception) {
+        output.forEach { logger.error("error: $it") }
+        throw e
+    }
+    return output
+}
+
+/**
+ * Run a process. If it fails, write output to gradle warn log and return an empty list.
+ */
+fun Project.procRunWarnLog(vararg params: String):List<String>{
+    val output = mutableListOf<String>()
+    try {
+        logger.info("Project.procRunFailLog: ${params.joinToString(" ")}")
+        procRun(*params){ line, _ -> output.add(line)}
+    } catch (e: Exception) {
+        output.forEach { logger.warn("warn: $it") }
+        return emptyList()
+    }
+    return output
+}
+
+/**
+ * Run a process. If it fails, write output to gradle error log and throw exception.
+ */
+fun Project.procRunFailThrow(vararg params: String):List<String>{
+    val output = mutableListOf<String>()
+    try {
+        logger.info("Project.procRunFailLog: ${params.joinToString(" ")}")
+        procRun(*params){ line, _ -> output.add(line)}
+    } catch (e: Exception) {
+        throw ProcOutputException("Project.procRunFailLog [failed]: ${params.joinToString(" ")}", output)
+    }
+    return output
+}
+
+class ProcOutputException(message: String?, val output: List<String>) : Exception(message)
