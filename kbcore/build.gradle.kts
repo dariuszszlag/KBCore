@@ -188,7 +188,18 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersionName() {
                 }
 
                 override fun runGitStatement(project: Project, vararg params: String) {
-                    project.procRunFailLog("git", *params)
+                    if (params.any { it == "push" }) {
+                        val tempBranchName = "temp_branch_${project.version}"
+                        val currentBranch = runGitCommand("git rev-parse --abbrev-ref HEAD")
+                        if (currentBranch != null) {
+                            project.procRunFailLog("git", "branch", tempBranchName)
+                            project.procRunFailLog("git", "checkout", currentBranch)
+                            project.procRunFailLog("git", "merge", tempBranchName)
+                            project.procRunFailLog("git", "push", "origin", currentBranch)
+                        }
+                    } else {
+                        project.procRunFailLog("git", *params)
+                    }
                 }
             }
         )
@@ -291,3 +302,30 @@ fun Project.setProperVersion(version: String): String {
 }
 
 class ProcOutputException(message: String?, val output: List<String>) : Exception(message)
+
+fun runGitCommand(command: String): String? {
+    return try {
+        val parts = command.split("\\s".toRegex())
+        val proc = ProcessBuilder(*parts.toTypedArray())
+            .directory(file(findRepoRoot()))
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        proc.waitFor(60, TimeUnit.MINUTES)
+        proc.inputStream.bufferedReader().readText()
+    } catch(e: java.io.IOException) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun Project.findRepoRoot(): String {
+    val results = procRunWarnLog("git", "rev-parse", "--show-toplevel")
+    return if (results.isEmpty()) {
+        "."
+    } else {
+        val repoFile = File(results.first())
+        projectDir.toPath().relativize(repoFile.toPath()).toString()
+    }
+}
