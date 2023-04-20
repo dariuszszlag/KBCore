@@ -115,7 +115,7 @@ publishing {
 
 kmmbridge {
     mavenPublishArtifacts()
-    gitTagVersions()
+    githubReleaseVersions()
     spm()
 }
 
