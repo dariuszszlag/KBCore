@@ -14,13 +14,29 @@ jobs:
     runs-on: macos-latest
     steps:
 
+    - name: Create random ID for branch name
+      id: generate-uuid
+      uses: filipstefansson/uuid-action@v1.1
+
+    - name: Create random branch
+      uses: peterjgrainger/action-create-branch@v2.2.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_CODE }}
+      with:
+        branch: "build-${{ steps.generate-uuid.outputs.uuid }}"
+
+    - name: Checkout the repo
+      uses: actions/checkout@v3
+      with:
+        ref: "build-${{ steps.generate-uuid.outputs.uuid }}"
+
     - name: Checkout the repo
       uses: actions/checkout@v3
 
     - name: Set Up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: 17
+        java-version: 11
         distribution: temurin
 
     - name: Cache build tooling
@@ -36,3 +52,10 @@ jobs:
 
     - name: Publish to GitHub Package Registry 🚀
       run: ./gradlew kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }}
+
+    - name: Delete random branch
+      if: always()
+      uses: touchlab/action-delete-branch@v3
+      with:
+        github_token: ${{ secrets.SECRET_GITHUB_CODE }}
+        branches: "build-${{ steps.generate-uuid.outputs.uuid }}"
