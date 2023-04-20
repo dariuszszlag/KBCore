@@ -1,0 +1,31 @@
+name: Create KBCore (Android)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Release KBCore
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout the repo
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Publish to GitHub Package Registry 🚀
+        run: ./gradlew :kbcore:publish -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PVERSION=${{ github.ref_name }}
