@@ -14,33 +14,33 @@ jobs:
     runs-on: macos-latest
     steps:
 
-      - name: Checkout the repo
-        uses: actions/checkout@v3
+    - name: Checkout the repo
+      uses: actions/checkout@v3
 
-      - name: Change wrapper permissions
-        run: chmod +x ./generate-version.bash
+    - name: Change wrapper permissions
+      run: chmod +x ./generate-version.bash
 
-      - name: Set Up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: temurin
+    - name: Set Up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+        distribution: temurin
 
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
+    - name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
 
-      - name: Cache build tooling
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.konan
-          key: ${{ runner.os }}-v4-${{ hashFiles('*.gradle.kts') }}
+    - name: Cache build tooling
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.konan
+        key: ${{ runner.os }}-v4-${{ hashFiles('*.gradle.kts') }}
 
-      - name: Change wrapper permissions
-        run: chmod +x ./gradlew
+    - name: Change wrapper permissions
+      run: chmod +x ./gradlew
 
-      - name: Publish to GitHub Package Registry 🚀
-        run: ./gradlew :kbcore:kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }}
-        env:
-          GRADLE_OPTS: -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
+    - name: Publish to GitHub Package Registry 🚀
+      run: ./gradlew :kbcore:kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }}
+      env:
+        GRADLE_OPTS: -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
