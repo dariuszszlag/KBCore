@@ -124,6 +124,7 @@ tasks.withType<PublishToMavenRepository> {
 }
 
 fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
+    versionPrefix.set("")
     versionManager.apply {
         set(object: co.touchlab.faktory.versionmanager.GitTagBasedVersionManager() {
 
@@ -170,7 +171,7 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
                 override fun writeMarkerVersion(project: Project, version: String) {
                     val correctVersion = project.setProperVersion(version)
                     project.procRunFailThrow("git", "tag", correctVersion)
-                    project.procRunFailThrow("git", "push", "origin", correctVersion)
+                    project.procRunFailThrow("git", "push", "--tags")
                 }
 
                 override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
