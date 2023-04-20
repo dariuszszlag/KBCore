@@ -154,7 +154,7 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
 
                 override fun writeMarkerVersion(project: Project, version: String) {
                     project.procRunFailThrow("git", "tag", version)
-                    project.procRunFailThrow("git", "push", "origin", "tag", version)
+                    project.procRunFailThrow("git", "push", "origin", version)
                 }
 
                 override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
