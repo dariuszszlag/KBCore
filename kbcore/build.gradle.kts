@@ -30,7 +30,6 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "kbcore"
             isStatic = false
         }
     }
@@ -114,12 +113,13 @@ publishing {
     }
 }
 
-tasks.withType<PublishToMavenRepository> {
-    dependsOn(tasks.assemble)
-}
-
 kmmbridge {
     mavenPublishArtifacts()
     gitTagVersions()
     spm()
 }
+
+tasks.withType<PublishToMavenRepository> {
+    dependsOn(tasks.assemble)
+}
+
