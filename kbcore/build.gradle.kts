@@ -23,7 +23,7 @@ kotlin {
             }
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -31,6 +31,7 @@ kotlin {
     ).forEach {
         it.binaries.framework {
             baseName = "kbcore"
+            isStatic = false
         }
     }
 
@@ -118,7 +119,7 @@ tasks.withType<PublishToMavenRepository> {
 }
 
 kmmbridge {
+    mavenPublishArtifacts()
     gitTagVersions()
     spm()
-    mavenPublishArtifacts()
 }
