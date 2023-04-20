@@ -5,7 +5,7 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version "0.3.7"
 }
 
-group = "com.dariusz"
+group = "com.darek"
 
 val GIT_USER: String? by project
 val GIT_TOKEN: String? by project
@@ -83,7 +83,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.dariusz.kbcore"
+    namespace = "com.darek.kbcore"
     compileSdk = 33
     defaultConfig {
         minSdk = 26
