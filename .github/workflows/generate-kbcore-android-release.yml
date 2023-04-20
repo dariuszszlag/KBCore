@@ -26,5 +26,5 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Publish to GitHub Package Registry 🚀
-      run: ./gradlew :kbcore:publish -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PVERSION=${{ github.ref_name }}
+      run: ./gradlew :kbcore:publishAndroidPublicationToGitHubPackagesRepository -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PVERSION=${{ github.ref_name }}
 
