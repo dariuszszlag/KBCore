@@ -11,6 +11,8 @@ val GIT_USER: String? by project
 val GIT_TOKEN: String? by project
 val VERSION: String? by project
 
+version = VERSION ?: "0.1"
+
 kotlin {
     android {
         publishLibraryVariants("release")
