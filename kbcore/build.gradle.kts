@@ -1,3 +1,5 @@
+import co.touchlab.faktory.versionmanager.VersionWriter
+
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
@@ -115,7 +117,7 @@ publishing {
 
 kmmbridge {
     mavenPublishArtifacts()
-    generateVersion()
+    generateVersionName()
     spm()
 }
 
@@ -123,30 +125,24 @@ tasks.withType<PublishToMavenRepository> {
     dependsOn(tasks.assemble)
 }
 
-fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
-    versionPrefix.set("")
+fun co.touchlab.faktory.KmmBridgeExtension.generateVersionName() {
     versionManager.apply {
-        set(object: co.touchlab.faktory.versionmanager.GitTagBasedVersionManager() {
+        set(object: co.touchlab.faktory.versionmanager.VersionManager {
+            override val needsGitTags: Boolean
+                get() = true
 
-            val TEMP_PUBLISH_TAG_PREFIX = "kmmbridge-tmp-publishing-"
+            override fun getVersion(
+                project: Project,
+                versionPrefix: String,
+                versionWriter: VersionWriter
+            ): String = project.version.toString()
 
-            override fun createMarkerVersion(project: Project, versionString: String): String? {
-                val correctVersion = project.setProperVersion(versionString)
-                return "${TEMP_PUBLISH_TAG_PREFIX}$correctVersion"
-            }
-
-            override fun filterMarkerVersion(project: Project, versionString: String): (String) -> Boolean =
-                {
-                    it.startsWith(
-                        TEMP_PUBLISH_TAG_PREFIX
-                    )
-                }
         })
         finalizeValue()
     }
     versionWriter.apply {
         set(
-            object: co.touchlab.faktory.versionmanager.VersionWriter {
+            object: VersionWriter {
                 override fun initVersions(project: Project) {
                     // Need to make sure we have all the tags. If no tags, we don't continue (but don't fail)
                     // This will usually happen when doing local dev.
