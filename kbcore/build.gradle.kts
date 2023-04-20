@@ -114,8 +114,8 @@ publishing {
 }
 
 kmmbridge {
-    generateVersion()
     mavenPublishArtifacts()
+    generateVersion()
     spm()
 }
 
@@ -129,64 +129,64 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersion() {
         finalizeValue()
     }
     versionWriter.apply {
-        set(CustomGitRemoteVersionWriter())
+        set(
+            object: co.touchlab.faktory.versionmanager.VersionWriter {
+                override fun initVersions(project: Project) {
+                    // Need to make sure we have all the tags. If no tags, we don't continue (but don't fail)
+                    // This will usually happen when doing local dev.
+                    try {
+                        project.procRunFailThrow("git", "fetch", "--all", "--tags")
+                    } catch (e: co.touchlab.faktory.internal.ProcOutputException) {
+                        val localOk = e.output.any { it.contains("There is no tracking information for the current branch") }
+                        throw co.touchlab.faktory.versionmanager.VersionException(
+                            localOk, if (localOk) {
+                                "Version cannot be loaded. Publishing disabled (this is fine for local development)"
+                            } else {
+                                "${e.message}\n${e.output.joinToString("\n")}"
+                            }
+                        )
+                    }
+                }
+
+                override fun scanVersions(project: Project, block: (Sequence<String>) -> Unit) {
+                    procRunSequence("git", "tag", block = block)
+                }
+
+                override fun writeMarkerVersion(project: Project, version: String) {
+                    project.procRunFailThrow("git", "tag", version)
+                    project.procRunFailThrow("git", "push", "origin", "tag", version)
+                }
+
+                override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
+                    procRunSequence("git", "tag") { sequence ->
+                        val partialVersionSequence = sequence.filter(filter)
+                        partialVersionSequence.forEach { tag ->
+                            project.logger.warn("Deleting tag $tag")
+                            project.procRunFailThrow("git", "tag", "-d", tag)
+                            project.procRunFailThrow("git", "push", "origin", "-d", tag)
+                        }
+                    }
+                }
+
+                override fun writeFinalVersion(project: Project, version: String) {
+                    project.procRunFailLog("git", "tag", "-a", version, "-m", "KMM release version $version")
+                    project.procRunFailLog("git", "push", "--follow-tags")
+                }
+
+                override fun runGitStatement(project: Project, vararg params: String) {
+                    project.procRunFailLog("git", *params)
+                }
+            }
+        )
         finalizeValue()
     }
 }
-class CustomGitRemoteVersionWriter: co.touchlab.faktory.versionmanager.VersionWriter {
-    override fun initVersions(project: Project) {
-        // Need to make sure we have all the tags. If no tags, we don't continue (but don't fail)
-        // This will usually happen when doing local dev.
-        try {
-            project.procRunFailThrow("git", "fetch", "--all", "--tags")
-        } catch (e: co.touchlab.faktory.internal.ProcOutputException) {
-            val localOk = e.output.any { it.contains("There is no tracking information for the current branch") }
-            throw co.touchlab.faktory.versionmanager.VersionException(
-                localOk, if (localOk) {
-                    "Version cannot be loaded. Publishing disabled (this is fine for local development)"
-                } else {
-                    "${e.message}\n${e.output.joinToString("\n")}"
-                }
-            )
-        }
-    }
-
-    override fun scanVersions(project: Project, block: (Sequence<String>) -> Unit) {
-        procRunSequence("git", "tag", block = block)
-    }
-
-    override fun writeMarkerVersion(project: Project, version: String) {
-        project.procRunFailThrow("git", "tag", version)
-        project.procRunFailThrow("git", "push", "origin", "tag", version)
-    }
-
-    override fun cleanMarkerVersions(project: Project, filter: (String) -> Boolean) {
-        procRunSequence("git", "tag") { sequence ->
-            val partialVersionSequence = sequence.filter(filter)
-            partialVersionSequence.forEach { tag ->
-                project.logger.warn("Deleting tag $tag")
-                project.procRunFailThrow("git", "tag", "-d", tag)
-                project.procRunFailThrow("git", "push", "origin", "-d", tag)
-            }
-        }
-    }
-
-    override fun writeFinalVersion(project: Project, version: String) {
-        project.procRunFailLog("git", "tag", "-a", version, "-m", "KMM release version $version")
-        project.procRunFailLog("git", "push", "--follow-tags")
-    }
-
-    override fun runGitStatement(project: Project, vararg params: String) {
-        project.procRunFailLog("git", *params)
-    }
-}
-
 fun procRun(vararg params: String, processLines: (String, Int) -> Unit): Unit {
     val process = ProcessBuilder(*params)
         .redirectErrorStream(true)
         .start()
 
-    val streamReader = jdk.internal.org.jline.utils.InputStreamReader(process.inputStream)
+    val streamReader = process.inputStream.reader()
     val bufferedReader = streamReader.buffered()
     var lineCount = 1
 
@@ -205,7 +205,7 @@ fun procRunSequence(vararg params: String, block:(Sequence<String>)->Unit) {
         .redirectErrorStream(true)
         .start()
 
-    val streamReader = jdk.internal.org.jline.utils.InputStreamReader(process.inputStream)
+    val streamReader = process.inputStream.reader()
     val bufferedReader = streamReader.buffered()
 
     var thrown:Throwable? = null
