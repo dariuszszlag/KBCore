@@ -53,7 +53,9 @@ kotlin {
                 implementation("io.ktor:ktor-client-android:2.2.3")
             }
         }
-        val androidUnitTest by getting
+        val androidUnitTest by getting {
+            dependsOn(commonTest)
+        }
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
@@ -87,6 +89,12 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    publishing {
+        multipleVariants {
+            withSourcesJar()
+            allVariants()
+        }
     }
 }
 
