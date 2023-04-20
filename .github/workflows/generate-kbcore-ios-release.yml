@@ -3,7 +3,7 @@ name: Create KBCore (iOS)
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "*.*.*"
 
   workflow_dispatch:
 
