@@ -13,14 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the repo
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      uses: actions/checkout@v3
 
     - name: Set Up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: 11
+        java-version: 17
         distribution: temurin
 
     - name: Change wrapper permissions
