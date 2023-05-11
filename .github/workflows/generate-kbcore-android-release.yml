@@ -9,7 +9,7 @@ on:
 
 jobs:
   publish:
-    name: Release KBCore
+    name: Create KBCore for Android
     runs-on: ubuntu-latest
     steps:
     

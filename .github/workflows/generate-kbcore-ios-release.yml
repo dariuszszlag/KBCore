@@ -8,9 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  kmmbridgepublish:
+  publish:
     name: Create KBCore for iOS with KMMBridge
-    concurrency: "kmmbridgepublish-${{ github.repository }}"
     runs-on: macos-latest
     steps:
 
@@ -22,6 +21,9 @@ jobs:
       with:
         java-version: 11
         distribution: temurin
+
+    - name: Set current branch name as env variable
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
 
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v1
@@ -38,4 +40,4 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Publish to GitHub Package Registry 🚀
-      run: ./gradlew kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }} -PVERSION_NAME=${{ github.ref_name }}
+      run: ./gradlew :kbcore:kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }} -PVERSION_NAME=${{ github.ref_name }}

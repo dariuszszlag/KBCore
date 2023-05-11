@@ -1,5 +1,3 @@
-import co.touchlab.faktory.versionmanager.VersionWriter
-
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
@@ -134,7 +132,7 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersionName() {
             override fun getVersion(
                 project: Project,
                 versionPrefix: String,
-                versionWriter: VersionWriter
+                versionWriter: co.touchlab.faktory.versionmanager.VersionWriter
             ): String = project.version.toString()
 
         })
@@ -142,12 +140,11 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersionName() {
     }
     versionWriter.apply {
         set(
-            object: VersionWriter {
+            object: co.touchlab.faktory.versionmanager.VersionWriter {
                 override fun initVersions(project: Project) {
-                    // Need to make sure we have all the tags. If no tags, we don't continue (but don't fail)
-                    // This will usually happen when doing local dev.
                     try {
                         project.procRunFailThrow("git", "fetch", "--all", "--tags")
+                        project.procRunFailThrow("git", "checkout", System.getenv("BRANCH_NAME"))
                     } catch (e: co.touchlab.faktory.internal.ProcOutputException) {
                         val localOk = e.output.any { it.contains("There is no tracking information for the current branch") }
                         throw co.touchlab.faktory.versionmanager.VersionException(
@@ -188,18 +185,7 @@ fun co.touchlab.faktory.KmmBridgeExtension.generateVersionName() {
                 }
 
                 override fun runGitStatement(project: Project, vararg params: String) {
-                    if (params.any { it == "push" }) {
-                        val tempBranchName = "temp_branch_${project.version}"
-                        val currentBranch = runGitCommand("git rev-parse --abbrev-ref HEAD")
-                        if (currentBranch != null) {
-                            project.procRunFailLog("git", "branch", tempBranchName)
-                            project.procRunFailLog("git", "checkout", currentBranch)
-                            project.procRunFailLog("git", "merge", tempBranchName)
-                            project.procRunFailLog("git", "push", "origin", currentBranch)
-                        }
-                    } else {
-                        project.procRunFailLog("git", *params)
-                    }
+                    project.procRunFailLog("git", *params)
                 }
             }
         )
@@ -302,30 +288,3 @@ fun Project.setProperVersion(version: String): String {
 }
 
 class ProcOutputException(message: String?, val output: List<String>) : Exception(message)
-
-fun runGitCommand(command: String): String? {
-    return try {
-        val parts = command.split("\\s".toRegex())
-        val proc = ProcessBuilder(*parts.toTypedArray())
-            .directory(file(findRepoRoot()))
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        proc.waitFor(60, TimeUnit.MINUTES)
-        proc.inputStream.bufferedReader().readText()
-    } catch(e: java.io.IOException) {
-        e.printStackTrace()
-        null
-    }
-}
-
-fun Project.findRepoRoot(): String {
-    val results = procRunWarnLog("git", "rev-parse", "--show-toplevel")
-    return if (results.isEmpty()) {
-        "."
-    } else {
-        val repoFile = File(results.first())
-        projectDir.toPath().relativize(repoFile.toPath()).toString()
-    }
-}
