@@ -62,6 +62,5 @@ jobs:
         git tag -a ${GITHUB_REF#refs/*/} ${{ env.LAST_COMMIT }} -m "Package.swift for v${GITHUB_REF#refs/*/}"
         git checkout main
         git pull origin main
-        git merge main
-        git branch --delete "commit-package-swift-ver-${GITHUB_REF#refs/*/}"
+        git merge "commit-package-swift-ver-${GITHUB_REF#refs/*/}"
         git push origin main
