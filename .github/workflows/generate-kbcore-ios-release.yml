@@ -36,8 +36,8 @@ jobs:
 
     - name: Setup Git user
       run: |
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
+        git config user.name "${{ github.actor }}"
+        git config user.email "<${{ github.actor }}@users.noreply.github.com>"
 
     - name: Set current tag name as github env
       run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
