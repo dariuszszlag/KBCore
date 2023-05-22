@@ -55,21 +55,15 @@ jobs:
         git commit -m "Package.swift for v${GITHUB_REF#refs/*/}"
 
     - name: Set last commit's hash as github env
-      id: last_commit
-      run: echo "LAST_COMMIT=last_commit_name" >> $GITHUB_ENV
-      env:
-        last_commit_name: ${git rev-parse --short HEAD}
+      run: echo "LAST_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
     - name: Set current branch name as github env
-      id: current_branch
-      run: echo "CURRENT_BRANCH=current_branch_name" >> $GITHUB_ENV
-      env:
-        current_branch_name: ${git branch --show-current}
+      run: echo "CURRENT_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
 
     - name: Set tag for the commit and merge
       run: | 
-        git tag -a ${GITHUB_REF#refs/*/} ${{ steps.last_commit.env.last_commit_name }} -m "Package.swift for v${GITHUB_REF#refs/*/}"
-        git checkout ${{ steps.current_branch.env.current_branch_name }}
-        git pull origin ${{ steps.current_branch.env.current_branch_name }}
+        git tag -a ${GITHUB_REF#refs/*/} ${{ env.LAST_COMMIT }} -m "Package.swift for v${GITHUB_REF#refs/*/}"
+        git checkout ${{ env.CURRENT_BRANCH }}
+        git pull origin ${{ env.CURRENT_BRANCH }}
         git merge "commit-package-swift-ver-${GITHUB_REF#refs/*/}"
         git push origin
