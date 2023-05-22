@@ -1,0 +1,6 @@
+framework module kbcore {
+    umbrella header "kbcore.h"
+
+    export *
+    module * { export * }
+}
