@@ -28,14 +28,6 @@ jobs:
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v1
 
-    - name: Cache build tooling
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.konan
-        key: ${{ runner.os }}-v4-${{ hashFiles('*.gradle.kts') }}
-
     - name: Change wrapper permissions
       run: chmod +x ./gradlew
 
@@ -46,24 +38,24 @@ jobs:
       run: |
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
-        
+
+    - name: Set current tag name as github env
+      run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
     - name: Commit necessary files
       run: |
         git pull origin main
-        git checkout -b "commit-package-swift-${GITHUB_REF#refs/*/}"
+        git checkout tags/${{ env.CURRENT_TAG }} -b "commit-package-swift-${{ env.CURRENT_TAG }}"
         git add Package.swift
-        git commit -m "Package.swift for v${GITHUB_REF#refs/*/}"
-
-    - name: Set last commit's hash as github env
-      run: echo "LAST_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
 
     - name: Set current branch name as github env
       run: echo "CURRENT_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
 
     - name: Set tag for the commit and merge
       run: | 
-        git tag -a ${GITHUB_REF#refs/*/} ${{ env.LAST_COMMIT }} -m "Package.swift for v${GITHUB_REF#refs/*/}"
+        git tag -a ${{ env.CURRENT_TAG }} ${{ env.LAST_COMMIT }} -m "Package.swift for v${{ env.CURRENT_TAG }}"
         git checkout ${{ env.CURRENT_BRANCH }}
         git pull origin ${{ env.CURRENT_BRANCH }}
-        git merge "commit-package-swift-ver-${GITHUB_REF#refs/*/}"
+        git merge "commit-package-swift-ver-${{ env.CURRENT_TAG }}"
         git push origin
