@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("maven-publish")
-    id("co.touchlab.faktory.kmmbridge") version "0.3.7"
+    id("io.github.luca992.multiplatform-swiftpackage") version "2.1.1"
 }
 
 group = "com.darek"
@@ -113,13 +113,14 @@ publishing {
     }
 }
 
-kmmbridge {
-    mavenPublishArtifacts()
-    githubReleaseVersions()
-    spm()
+multiplatformSwiftPackage {
+    packageName("kbcore")
+    swiftToolsVersion("5.7")
+    outputDirectory(rootProject.projectDir)
+    targetPlatforms {
+        iOS { v("16") }
+    }
+    buildConfiguration { release() }
+    distributionMode { remote("https://maven.pkg.github.com/dariuszszlag/KBCore") }
+    zipFileName("kbcore-ios")
 }
-
-tasks.withType<PublishToMavenRepository> {
-    dependsOn(tasks.assemble)
-}
-
