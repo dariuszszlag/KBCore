@@ -8,14 +8,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  kmmbridgepublish:
-    name: Create KBCore for iOS with KMMBridge
-    concurrency: "kmmbridgepublish-${{ github.repository }}"
+  kbcore-publish:
+    name: Create KBCore for iOS
+    concurrency: "kbcore-publish-${{ github.repository }}"
     runs-on: macos-latest
     steps:
 
     - name: Checkout the repo
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Set Up JDK
       uses: actions/setup-java@v3
@@ -37,5 +39,29 @@ jobs:
     - name: Change wrapper permissions
       run: chmod +x ./gradlew
 
-    - name: Publish to GitHub Package Registry 🚀
-      run: ./gradlew kmmBridgePublish -PENABLE_PUBLISHING=true -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }}
+    - name: Create Package.swift file and XCFramework
+      run: ./gradlew :kbcore:createSwiftPackage -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PGITHUB_REPO=${{ github.repository }}
+
+    - name: Setup Git user
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+        
+    - name: Commit necessary files
+      run: |
+        git pull origin main
+        git checkout -b "commit-package-swift-${GITHUB_REF#refs/*/}"
+        git add Package.swift
+        git commit -m "Package.swift for v${GITHUB_REF#refs/*/}"
+
+    - name: Set last commit's hash as github env
+      run: echo "LAST_COMMIT=${git rev-parse --short HEAD}" >> $GITHUB_ENV
+
+    - name: Set tag for the commit and merge
+      run: | 
+        git tag -a ${GITHUB_REF#refs/*/} ${{ env.LAST_COMMIT }} -m "Package.swift for v${GITHUB_REF#refs/*/}"
+        git checkout main
+        git pull origin main
+        git merge main
+        git branch --delete "commit-package-swift-ver-${GITHUB_REF#refs/*/}"
+        git push origin main
