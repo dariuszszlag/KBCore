@@ -58,8 +58,8 @@ jobs:
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
         signoff: false
-        branch: commit-package-swift-${{ env.CURRENT_TAG }}
+        base: commit-package-swift-${{ env.CURRENT_TAG }}
+        branch: main
         delete-branch: false
         title: "Package.swift for v${{ env.CURRENT_TAG }}"
         assignees: ${{ github.actor }}
-        reviewers: ${{ github.actor }}
