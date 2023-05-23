@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("maven-publish")
-    id("io.github.luca992.multiplatform-swiftpackage") version "2.1.1"
+    id("com.dariusz.multiplatform-swiftpackage") version "0.0.6"
 }
 
 group = "com.darek"
@@ -121,6 +121,6 @@ multiplatformSwiftPackage {
         iOS { v("16") }
     }
     buildConfiguration { release() }
-    distributionMode { remote("https://maven.pkg.github.com/dariuszszlag/KBCore") }
-    zipFileName("kbcore-ios")
+    distributionMode { maven() }
+    versionName(VERSION_NAME ?: "0.1")
 }
