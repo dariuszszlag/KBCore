@@ -28,6 +28,9 @@ jobs:
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v1
 
+    - name: Set multiplatform plugin access token as env variable
+      run: echo "ACCESS_TOKEN=${{ secrets.SECRET_GITHUB_CODE_ACCESS_MULTIPLATFORM }}" >> $GITHUB_ENV
+
     - name: Change wrapper permissions
       run: chmod +x ./gradlew
 
