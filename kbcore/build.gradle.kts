@@ -116,7 +116,7 @@ publishing {
 multiplatformSwiftPackage {
     packageName("kbcore")
     swiftToolsVersion("5.7")
-    outputDirectory(rootProject.projectDir)
+    outputDirectory(project.rootDir)
     targetPlatforms {
         iOS { v("16") }
     }
