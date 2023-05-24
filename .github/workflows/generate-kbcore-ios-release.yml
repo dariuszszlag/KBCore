@@ -49,17 +49,3 @@ jobs:
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
         git push --set-upstream origin "commit-package-swift-${{ env.CURRENT_TAG }}"
-
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.SECRET_GITHUB_CODE }}
-        commit-message: "Package.swift for v${{ env.CURRENT_TAG }}"
-        committer: GitHub <noreply@github.com>
-        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-        signoff: false
-        base: commit-package-swift-${{ env.CURRENT_TAG }}
-        branch: main
-        delete-branch: false
-        title: "Package.swift for v${{ env.CURRENT_TAG }}"
-        assignees: ${{ github.actor }}
