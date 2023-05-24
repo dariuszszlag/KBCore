@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("maven-publish")
-    id("com.dariusz.multiplatform-swiftpackage") version "0.0.6"
+    id("com.dariusz.multiplatform-swiftpackage") version "0.0.7"
 }
 
 group = "com.darek"
