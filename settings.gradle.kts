@@ -1,15 +1,29 @@
 pluginManagement {
     repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/dariuszszlag/multiplatform-swiftpackage")
+            credentials {
+                username = "dariuszszlag"
+                password = System.getenv("ACCESS_TOKEN")
+            }
+        }
         google()
         gradlePluginPortal()
         mavenCentral()
-        maven ("https://s01.oss.sonatype.org/content/repositories/releases/")
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/dariuszszlag/multiplatform-swiftpackage")
+            credentials {
+                username = "dariuszszlag"
+                password = System.getenv("ACCESS_TOKEN")
+            }
+        }
         google()
+        gradlePluginPortal()
         mavenCentral()
     }
 }

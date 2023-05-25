@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("maven-publish")
-    id("io.github.luca992.multiplatform-swiftpackage") version "2.1.1"
+    id("com.dariusz.multiplatform-swiftpackage") version "0.0.30"
 }
 
 group = "com.darek"
@@ -116,11 +116,53 @@ publishing {
 multiplatformSwiftPackage {
     packageName("kbcore")
     swiftToolsVersion("5.7")
-    outputDirectory(rootProject.projectDir)
+    outputDirectory(File(findRepoRoot()))
     targetPlatforms {
         iOS { v("16") }
     }
     buildConfiguration { release() }
-    distributionMode { remote("https://maven.pkg.github.com/dariuszszlag/KBCore") }
-    zipFileName("kbcore-ios")
+    distributionMode { maven() }
+    versionName(VERSION_NAME ?: "0.1")
 }
+
+fun Project.findRepoRoot(): String {
+    val results = procRunWarnLog("git", "rev-parse", "--show-toplevel")
+    return if (results.isEmpty()) {
+        "."
+    } else {
+        val repoFile = File(results.first())
+        projectDir.toPath().relativize(repoFile.toPath()).toString()
+    }
+}
+
+fun Project.procRunWarnLog(vararg params: String):List<String>{
+    val output = mutableListOf<String>()
+    try {
+        logger.info("Project.procRunFailLog: ${params.joinToString(" ")}")
+        procRun(*params){ line, _ -> output.add(line)}
+    } catch (e: Exception) {
+        output.forEach { logger.warn("warn: $it") }
+        return emptyList()
+    }
+    return output
+}
+
+fun procRun(vararg params: String, processLines: (String, Int) -> Unit): Unit {
+     val process = ProcessBuilder(*params)
+         .redirectErrorStream(true)
+         .start()
+
+     val streamReader = process.inputStream.reader()
+     val bufferedReader = streamReader.buffered()
+     var lineCount = 1
+
+     bufferedReader.forEachLine { line ->
+         processLines(line, lineCount)
+         lineCount++
+     }
+
+     bufferedReader.close()
+     val returnValue = process.waitFor()
+     if(returnValue != 0)
+         throw GradleException("Process failed: ${params.joinToString(" ")}")
+ }
