@@ -48,7 +48,7 @@ jobs:
     - name: Commit necessary files
       run: |
         git pull origin main
-        git checkout tags/${{ env.CURRENT_TAG }} -b "commit-package-swift-${{ env.CURRENT_TAG }}"
+        git checkout -b commit-package-swift-${{ env.CURRENT_TAG }} refs/tags/${{ env.CURRENT_TAG }} 
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
-        git push --set-upstream origin "commit-package-swift-${{ env.CURRENT_TAG }}"
+        git push --set-upstream origin commit-package-swift-${{ env.CURRENT_TAG }}
