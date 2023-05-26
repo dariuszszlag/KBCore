@@ -48,9 +48,8 @@ jobs:
     - name: Commit necessary files
       run: |
         git pull origin main
-        git checkout -b ${{ env.CURRENT_TAG }} refs/tags/${{ env.CURRENT_TAG }} 
+        git checkout main
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
-        git tag -d refs/tags/${{ env.CURRENT_TAG }}
-        git tag refs/tags/${{ env.CURRENT_TAG }} HEAD
-        git push --tags origin
+        git tag -a -f refs/tags/${{ env.CURRENT_TAG }} HEAD
+        git push --atomic origin main refs/tags/${{ env.CURRENT_TAG }}
