@@ -52,4 +52,4 @@ jobs:
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
         git tag -a -f refs/tags/${{ env.CURRENT_TAG }} HEAD
-        git push --atomic origin main refs/tags/${{ env.CURRENT_TAG }}
+        git push --atomic -f origin main refs/tags/${{ env.CURRENT_TAG }}
