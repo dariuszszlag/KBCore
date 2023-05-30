@@ -46,10 +46,10 @@ jobs:
       run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Set current commit hash as github env
-      run: echo "CURRENT_COMMIT=${git rev-parse --short HEAD}" >> $GITHUB_ENV
+      run: echo "CURRENT_COMMIT=${{git rev-parse --short HEAD}}" >> $GITHUB_ENV
       
     - name: Set base branch name as github env
-      run: echo "CURRENT_BRANCH=${git name-rev --name-only ${{ env.CURRENT_COMMIT }}}" >> $GITHUB_ENV
+      run: echo "CURRENT_BRANCH=${{git name-rev --name-only ${{ env.CURRENT_COMMIT }}}}" >> $GITHUB_ENV
 
     - name: Commit necessary files
       run: |
