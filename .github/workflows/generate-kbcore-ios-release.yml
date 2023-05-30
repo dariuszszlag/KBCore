@@ -45,11 +45,14 @@ jobs:
     - name: Set current tag name as github env
       run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-    - name: Commit necessary files
+    - name: Set current commit hash as github env
+      run: echo "CURRENT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+    - name: Commit Package.swift file to main branch
       run: |
-        git pull origin main
         git checkout main
+        git pull origin main
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
-        git tag -a -f refs/tags/${{ env.CURRENT_TAG }} HEAD
-        git push --atomic -f origin main refs/tags/${{ env.CURRENT_TAG }}
+        git tag -a -f refs/tags/${{ env.CURRENT_TAG }} ${{ env.CURRENT_COMMIT }}
+        git push --set-upstream origin main
