@@ -58,4 +58,4 @@ jobs:
     - name: Push Package.swift file to main branch
       run: |   
         git tag -f ${{ env.CURRENT_TAG }} ${{ env.CURRENT_COMMIT }}
-        git push --set-upstream --force origin main
+        git push --set-upstream --tags --force origin main
