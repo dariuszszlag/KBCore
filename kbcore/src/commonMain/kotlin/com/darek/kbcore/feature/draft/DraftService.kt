@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-internal class DraftService(
+class DraftService(
     private val client: HttpClient
 ) {
 
@@ -20,7 +20,7 @@ internal class DraftService(
 internal const val DRAFTS_URL = "/drafts"
 
 @Serializable
-internal data class DraftsResponse(val listOfDrafts: List<Draft>) {
+data class DraftsResponse(val listOfDrafts: List<Draft>) {
     companion object {
         fun createDraftsResponse() = Json.encodeToString(DraftsResponse(listOfDrafts))
 
