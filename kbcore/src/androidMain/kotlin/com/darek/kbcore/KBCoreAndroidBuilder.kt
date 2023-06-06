@@ -5,28 +5,18 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 
-class KBCoreAndroidBuilder: KBCoreBuilder {
+internal class KBCoreAndroidBuilder: KBCoreBuilder {
 
-    private lateinit var coroutineScope: CoroutineScope
-
-    private lateinit var coroutineDispatcherImpl: CoroutineDispatcher
-
-    private lateinit var httpClient: HttpClient
-
-    override fun coroutineDispatcher(coroutineDispatcher: CoroutineDispatcher): KBCoreBuilder {
-        coroutineDispatcherImpl = coroutineDispatcher
-        return this
-    }
+    private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob() + CoroutineExceptionHandler { _, _ -> })
 
     override fun build(): KBCore {
-        coroutineScope = CoroutineScope(coroutineDispatcherImpl + SupervisorJob() + CoroutineExceptionHandler { _, _ -> })
-        httpClient = HttpClient(MockEngine) {
+        val httpClient = HttpClient(MockEngine) {
             interceptWithMockedResponses()
             install(ContentNegotiation) {
                 json(Json {
@@ -35,7 +25,7 @@ class KBCoreAndroidBuilder: KBCoreBuilder {
                 })
             }
         }
-        return if (::coroutineDispatcherImpl.isInitialized) KBCoreImpl(httpClient, coroutineScope) else throw IllegalArgumentException("No coroutine dispatcher provided")
+        return KBCoreImpl(httpClient, coroutineScope)
     }
 
 }

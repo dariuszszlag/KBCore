@@ -15,7 +15,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 
-object MockResponsesHelper {
+internal object MockResponsesHelper {
 
     private val responseHeaders =
         headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))

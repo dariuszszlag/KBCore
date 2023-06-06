@@ -9,18 +9,21 @@ import com.darek.kbcore.feature.post.PostService
 import com.darek.kbcore.feature.user.User
 import com.darek.kbcore.feature.user.UserService
 import com.darek.kbcore.session.SessionManager.checkUserAndReturnId
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutineScope
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class KBCoreImpl(
+internal class KBCoreImpl(
     private val client: HttpClient,
-    private val coroutineScope: CoroutineScope
+    @NativeCoroutineScope private val coroutineScope: CoroutineScope
 ) : KBCore {
 
+    @NativeCoroutinesState
     private val userId = MutableStateFlow(0)
 
     private val balanceService = BalanceService(client)
@@ -28,15 +31,23 @@ class KBCoreImpl(
     private val postService = PostService(client)
     private val userService = UserService(client)
 
+    @NativeCoroutinesState
     private val _userBalanceFlow = MutableStateFlow(Balance(0, 0, "$"))
+    @NativeCoroutinesState
     private val _userDraftsFlow = MutableStateFlow(listOf<Draft>())
+    @NativeCoroutinesState
     private val _userPostsFlow = MutableStateFlow(listOf<Post>())
+    @NativeCoroutinesState
     private val _userDataFlow = MutableStateFlow(User(0, "No such user"))
 
-    override val userBalanceFlow: Flow<Balance> = _userBalanceFlow.asStateFlow()
-    override val userDraftsFlow: Flow<List<Draft>> = _userDraftsFlow.asStateFlow()
-    override val userPostsFlow: Flow<List<Post>> = _userPostsFlow.asStateFlow()
-    override val userDataFlow: Flow<User> = _userDataFlow.asStateFlow()
+    @NativeCoroutinesState
+    override val userBalanceFlow: StateFlow<Balance> = _userBalanceFlow.asStateFlow()
+    @NativeCoroutinesState
+    override val userDraftsFlow: StateFlow<List<Draft>> = _userDraftsFlow.asStateFlow()
+    @NativeCoroutinesState
+    override val userPostsFlow: StateFlow<List<Post>> = _userPostsFlow.asStateFlow()
+    @NativeCoroutinesState
+    override val userDataFlow: StateFlow<User> = _userDataFlow.asStateFlow()
 
     override fun getDataForUser(userPassword: String) = coroutineScope.launch {
         userId.value = checkUserAndReturnId(userPassword)

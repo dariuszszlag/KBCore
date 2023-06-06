@@ -1,5 +1,6 @@
 package com.darek.kbcore.feature.post
 
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -7,18 +8,19 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class PostService(
+internal class PostService(
     private val client: HttpClient
 ) {
 
+    @NativeCoroutines
     suspend fun getPosts(): PostsResponse = client.get(POSTS_URL).body()
 
 }
 
-const val POSTS_URL = "/posts"
+internal const val POSTS_URL = "/posts"
 
 @Serializable
-data class PostsResponse(val listOfPosts: List<Post>) {
+internal data class PostsResponse(val listOfPosts: List<Post>) {
     companion object {
         fun createPostsResponse() = Json.encodeToString(PostsResponse(listOfPosts))
 

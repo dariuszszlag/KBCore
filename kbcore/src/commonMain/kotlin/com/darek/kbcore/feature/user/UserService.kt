@@ -1,5 +1,6 @@
 package com.darek.kbcore.feature.user
 
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -7,18 +8,19 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class UserService(
+internal class UserService(
     private val client: HttpClient
 ) {
 
+    @NativeCoroutines
     suspend fun getUsers(): UsersResponse = client.get(USERS_URL).body()
 
 }
 
-const val USERS_URL = "/users"
+internal const val USERS_URL = "/users"
 
 @Serializable
-data class UsersResponse(val users: List<User>) {
+internal data class UsersResponse(val users: List<User>) {
 
     companion object {
         fun createUserResponse() = Json.encodeToString(UsersResponse(listOfUsers))

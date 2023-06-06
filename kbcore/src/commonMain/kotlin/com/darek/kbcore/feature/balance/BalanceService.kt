@@ -1,5 +1,6 @@
 package com.darek.kbcore.feature.balance
 
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -7,18 +8,19 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class BalanceService(
+internal class BalanceService(
     private val client: HttpClient
 ) {
 
+    @NativeCoroutines
     suspend fun getBalances(): BalanceResponse = client.get(BALANCE_URL).body()
 
 }
 
-const val BALANCE_URL = "/balances"
+internal const val BALANCE_URL = "/balances"
 
 @Serializable
-data class BalanceResponse(val balanceList: List<Balance>) {
+internal data class BalanceResponse(val balanceList: List<Balance>) {
     companion object {
         fun createBalanceResponse() = Json.encodeToString(BalanceResponse(listOfBalances))
 
