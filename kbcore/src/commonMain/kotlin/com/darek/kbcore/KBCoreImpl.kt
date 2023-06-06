@@ -9,7 +9,6 @@ import com.darek.kbcore.feature.post.PostService
 import com.darek.kbcore.feature.user.User
 import com.darek.kbcore.feature.user.UserService
 import com.darek.kbcore.session.SessionManager.checkUserAndReturnId
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutineScope
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +19,7 @@ import kotlinx.coroutines.launch
 
 internal class KBCoreImpl(
     private val client: HttpClient,
-    @NativeCoroutineScope private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope
 ) : KBCore {
 
     @NativeCoroutinesState
