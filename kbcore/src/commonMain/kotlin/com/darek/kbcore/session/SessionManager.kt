@@ -1,6 +1,6 @@
 package com.darek.kbcore.session
 
-object SessionManager {
+internal object SessionManager {
 
     fun checkUserAndReturnId(password: String) =
         listOfAuthenticatedUsers.find { it.password == password }?.id ?: 0

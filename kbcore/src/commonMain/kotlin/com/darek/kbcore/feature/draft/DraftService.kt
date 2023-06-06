@@ -1,5 +1,6 @@
 package com.darek.kbcore.feature.draft
 
+import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -7,18 +8,19 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class DraftService(
+internal class DraftService(
     private val client: HttpClient
 ) {
 
+    @NativeCoroutines
     suspend fun getDrafts(): DraftsResponse = client.get(DRAFTS_URL).body()
 
 }
 
-const val DRAFTS_URL = "/drafts"
+internal const val DRAFTS_URL = "/drafts"
 
 @Serializable
-data class DraftsResponse(val listOfDrafts: List<Draft>) {
+internal data class DraftsResponse(val listOfDrafts: List<Draft>) {
     companion object {
         fun createDraftsResponse() = Json.encodeToString(DraftsResponse(listOfDrafts))
 
