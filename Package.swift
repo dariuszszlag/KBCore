@@ -15,8 +15,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "kbcore",
-            url: "https://maven.pkg.github.com/dariuszszlag/KBCore/com/darek/kbcore-multi/0.3.1/kbcore-multi-0.3.1.zip",
-            checksum: "735913110194f9df765b5472037881b702fed3e122d43ed160442840045ef12a"
+            url: "https://maven.pkg.github.com/dariuszszlag/KBCore/com/darek/kbcore-multi/0.3.5/kbcore-multi-0.3.5.zip",
+            checksum: "b5b8e7ba35eb83476ea401a22407cbdde94f5175a7f5ed25b44ade29517e1763"
         ),
     ]
 )
