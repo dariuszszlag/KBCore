@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-internal class PostService(
+class PostService(
     private val client: HttpClient
 ) {
 
@@ -20,7 +20,7 @@ internal class PostService(
 internal const val POSTS_URL = "/posts"
 
 @Serializable
-internal data class PostsResponse(val listOfPosts: List<Post>) {
+data class PostsResponse(val listOfPosts: List<Post>) {
     companion object {
         fun createPostsResponse() = Json.encodeToString(PostsResponse(listOfPosts))
 

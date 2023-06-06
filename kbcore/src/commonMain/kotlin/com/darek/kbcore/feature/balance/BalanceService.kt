@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-internal class BalanceService(
+class BalanceService(
     private val client: HttpClient
 ) {
 
@@ -20,7 +20,7 @@ internal class BalanceService(
 internal const val BALANCE_URL = "/balances"
 
 @Serializable
-internal data class BalanceResponse(val balanceList: List<Balance>) {
+data class BalanceResponse(val balanceList: List<Balance>) {
     companion object {
         fun createBalanceResponse() = Json.encodeToString(BalanceResponse(listOfBalances))
 

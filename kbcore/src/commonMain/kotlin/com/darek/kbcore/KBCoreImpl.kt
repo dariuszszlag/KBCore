@@ -17,12 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-internal class KBCoreImpl(
+class KBCoreImpl(
     private val client: HttpClient,
     private val coroutineScope: CoroutineScope
 ) : KBCore {
 
-    @NativeCoroutinesState
     private val userId = MutableStateFlow(0)
 
     private val balanceService = BalanceService(client)
@@ -30,13 +29,9 @@ internal class KBCoreImpl(
     private val postService = PostService(client)
     private val userService = UserService(client)
 
-    @NativeCoroutinesState
     private val _userBalanceFlow = MutableStateFlow(Balance(0, 0, "$"))
-    @NativeCoroutinesState
     private val _userDraftsFlow = MutableStateFlow(listOf<Draft>())
-    @NativeCoroutinesState
     private val _userPostsFlow = MutableStateFlow(listOf<Post>())
-    @NativeCoroutinesState
     private val _userDataFlow = MutableStateFlow(User(0, "No such user"))
 
     @NativeCoroutinesState
