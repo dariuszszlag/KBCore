@@ -37,25 +37,21 @@ jobs:
     - name: Create Package.swift file and XCFramework
       run: ./gradlew :kbcore:createSwiftPackage -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PVERSION_NAME=${{ github.ref_name }}
 
-    - name: Setup Git user
+    - name: Set current tag name as github env
+      run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV   
+    
+    - name: Push Package.swift file to proper repository
       run: |
+        mkdir remote
+        cd remote
+        git init
         git config user.name "${{ github.actor }}"
         git config user.email "<${{ github.actor }}@users.noreply.github.com>"
-
-    - name: Set current tag name as github env
-      run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
-    - name: Commit Package.swift file to main branch
-      run: |
-        git checkout main
-        git pull origin main
+        git remote add packageswift https://${{ secrets.SECRET_GITHUB_CODE }}@github.com/dariuszszlag/KBCorePackageSwift.git
+        git fetch packageswift
+        git checkout packageswift/main
+        mv ../Package.swift .
         git add Package.swift
         git commit -m "Package.swift for v${{ env.CURRENT_TAG }}"
-        
-    - name: Set newest commits hash as github env
-      run: echo "CURRENT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
-        
-    - name: Push Package.swift file to main branch
-      run: |   
-        git tag -f ${{ env.CURRENT_TAG }} ${{ env.CURRENT_COMMIT }}
-        git push --set-upstream --tags --force origin main
+        git tag -a ${{ env.CURRENT_TAG }} HEAD -m "Package.swift for v${{ env.CURRENT_TAG }}"
+        git push packageswift ${{ env.CURRENT_TAG }}
