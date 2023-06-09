@@ -124,5 +124,5 @@ multiplatformSwiftPackage {
         iOS { v("16") }
     }
     buildConfiguration { release() }
-    distributionMode { local() }
+    distributionMode { maven() }
 }
