@@ -47,7 +47,7 @@ jobs:
         git init
         git config user.name "${{ github.actor }}"
         git config user.email "<${{ github.actor }}@users.noreply.github.com>"
-        git remote add packageswift https://github.com/dariuszszlag/KBCorePackageSwift.git
+        git remote add packageswift https://${{ secrets.SECRET_GITHUB_CODE }}@github.com/dariuszszlag/KBCorePackageSwift.git
         git fetch packageswift
         git checkout packageswift/main
         mv ../Package.swift .
