@@ -4,21 +4,17 @@ import com.darek.kbcore.feature.balance.Balance
 import com.darek.kbcore.feature.draft.Draft
 import com.darek.kbcore.feature.post.Post
 import com.darek.kbcore.feature.user.User
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.StateFlow
+import com.darek.kbcore.utils.SwiftFlow
+import kotlin.native.ObjCName
 
 interface KBCore {
 
-    @NativeCoroutinesState
-    val userBalanceFlow: StateFlow<Balance>
-    @NativeCoroutinesState
-    val userDraftsFlow: StateFlow<List<Draft>>
-    @NativeCoroutinesState
-    val userPostsFlow: StateFlow<List<Post>>
-    @NativeCoroutinesState
-    val userDataFlow: StateFlow<User>
+    val userBalanceFlow: SwiftFlow<Balance>
+    val userDraftsFlow: SwiftFlow<List<Draft>>
+    val userPostsFlow: SwiftFlow<List<Post>>
+    val userDataFlow: SwiftFlow<User>
 
-    fun getDataForUser(userPassword: String): Job
+    fun getDataForUser(@ObjCName(swiftName = "password") userPassword: String)
+
     fun logout()
 }

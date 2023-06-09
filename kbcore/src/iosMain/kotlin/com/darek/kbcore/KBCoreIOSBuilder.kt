@@ -1,21 +1,13 @@
 package com.darek.kbcore
 
 import com.darek.kbcore.MockResponsesHelper.interceptWithMockedResponses
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutineScope
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 
 internal class KBCoreIOSBuilder: KBCoreBuilder {
-
-    @NativeCoroutineScope
-    private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob() + CoroutineExceptionHandler { _, _ -> })
 
     override fun build(): KBCore {
         val httpClient = HttpClient(MockEngine) {
@@ -27,9 +19,8 @@ internal class KBCoreIOSBuilder: KBCoreBuilder {
                 })
             }
         }
-        return KBCoreImpl(httpClient, coroutineScope)
+        return KBCoreImpl(httpClient)
     }
-
 }
 
 actual fun kbCoreBuilder(): KBCoreBuilder = KBCoreIOSBuilder()

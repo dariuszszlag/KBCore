@@ -9,17 +9,16 @@ import com.darek.kbcore.feature.post.PostService
 import com.darek.kbcore.feature.user.User
 import com.darek.kbcore.feature.user.UserService
 import com.darek.kbcore.session.SessionManager.checkUserAndReturnId
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutinesState
+import com.darek.kbcore.utils.SwiftFlow
+import com.darek.kbcore.utils.mp
 import io.ktor.client.HttpClient
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class KBCoreImpl(
-    private val client: HttpClient,
-    private val coroutineScope: CoroutineScope
+    client: HttpClient
 ) : KBCore {
 
     private val userId = MutableStateFlow(0)
@@ -34,27 +33,25 @@ class KBCoreImpl(
     private val _userPostsFlow = MutableStateFlow(listOf<Post>())
     private val _userDataFlow = MutableStateFlow(User(0, "No such user"))
 
-    @NativeCoroutinesState
-    override val userBalanceFlow: StateFlow<Balance> = _userBalanceFlow.asStateFlow()
-    @NativeCoroutinesState
-    override val userDraftsFlow: StateFlow<List<Draft>> = _userDraftsFlow.asStateFlow()
-    @NativeCoroutinesState
-    override val userPostsFlow: StateFlow<List<Post>> = _userPostsFlow.asStateFlow()
-    @NativeCoroutinesState
-    override val userDataFlow: StateFlow<User> = _userDataFlow.asStateFlow()
+    override val userBalanceFlow: SwiftFlow<Balance> = _userBalanceFlow.asStateFlow().mp
+    override val userDraftsFlow: SwiftFlow<List<Draft>> = _userDraftsFlow.asStateFlow().mp
+    override val userPostsFlow: SwiftFlow<List<Post>> = _userPostsFlow.asStateFlow().mp
+    override val userDataFlow: SwiftFlow<User> = _userDataFlow.asStateFlow().mp
 
-    override fun getDataForUser(userPassword: String) = coroutineScope.launch {
-        userId.value = checkUserAndReturnId(userPassword)
-        _userBalanceFlow.value =
-            balanceService.getBalances().balanceList.find { it.userId == userId.value }
-                ?: Balance(0, 0, "$")
-        _userDraftsFlow.value =
-            draftService.getDrafts().listOfDrafts.filter { it.userId == userId.value }
-        _userPostsFlow.value =
-            postService.getPosts().listOfPosts.filter { it.userId == userId.value }
-        _userDataFlow.value =
-            userService.getUsers().users.find { it.id == userId.value }
-                ?: User(0, "No such user")
+    override fun getDataForUser(userPassword: String) {
+        MainScope().launch {
+            userId.value = checkUserAndReturnId(userPassword)
+            _userBalanceFlow.value =
+                balanceService.getBalances().balanceList.find { it.userId == userId.value }
+                    ?: Balance(0, 0, "$")
+            _userDraftsFlow.value =
+                draftService.getDrafts().listOfDrafts.filter { it.userId == userId.value }
+            _userPostsFlow.value =
+                postService.getPosts().listOfPosts.filter { it.userId == userId.value }
+            _userDataFlow.value =
+                userService.getUsers().users.find { it.id == userId.value }
+                    ?: User(0, "No such user")
+        }
     }
 
     override fun logout() {
