@@ -36,12 +36,7 @@ jobs:
 
     - name: Create Package.swift file and XCFramework
       run: ./gradlew :kbcore:createSwiftPackage -PGIT_USER=${{ github.actor }} -PGIT_TOKEN=${{ secrets.SECRET_GITHUB_CODE }} -PVERSION_NAME=${{ github.ref_name }}
-        
-    - name: Setup Git user
-      run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "<${{ github.actor }}@users.noreply.github.com>"
-    
+
     - name: Set current tag name as github env
       run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV   
     
@@ -50,6 +45,8 @@ jobs:
         mkdir remote
         cd remote
         git init
+        git config user.name "${{ github.actor }}"
+        git config user.email "<${{ github.actor }}@users.noreply.github.com>"
         git remote add packageswift https://github.com/dariuszszlag/KBCorePackageSwift.git
         git fetch packageswift
         git checkout packageswift/main
