@@ -1,6 +1,5 @@
 package com.darek.kbcore.feature.post
 
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -12,7 +11,6 @@ class PostService(
     private val client: HttpClient
 ) {
 
-    @NativeCoroutines
     suspend fun getPosts(): PostsResponse = client.get(POSTS_URL).body()
 
 }

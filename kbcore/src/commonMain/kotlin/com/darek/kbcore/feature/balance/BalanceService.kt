@@ -1,6 +1,5 @@
 package com.darek.kbcore.feature.balance
 
-import com.rickclephas.kmp.nativecoroutines.NativeCoroutines
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -12,7 +11,6 @@ class BalanceService(
     private val client: HttpClient
 ) {
 
-    @NativeCoroutines
     suspend fun getBalances(): BalanceResponse = client.get(BALANCE_URL).body()
 
 }
